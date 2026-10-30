@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  title: Customer and Shipment Management API
+  version: 1.0.0
+  description: |
+    REST API for customers, shipments and dashboard stats.
+    Log in via POST /api/auth/login, then click Authorize and paste the token.
+servers:
+  - url: http://localhost:4000
+tags:
+  - name: Auth
+  - name: Customers
+  - name: Shipments
+  - name: Dashboard
+  - name: Health
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  service: { type: string, example: shipment-api }
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive a JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: admin@example.com }
+                password: { type: string, example: Admin@123 }
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: "#/components/schemas/User" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/customers:
+    get:
+      tags: [Customers]
+      summary: List customers (soft-deleted are hidden)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema: { $ref: "#/components/schemas/CustomerStatus" }
+      responses:
+        "200":
+          description: Array of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Customer" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [Customers]
+      summary: Create a customer
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/customers/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Customers]
+      summary: Get one customer
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: The customer
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Customers]
+      summary: Partially update a customer (at least one field)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+    delete:
+      tags: [Customers]
+      summary: Soft delete a customer (sets deletedAt)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Soft deleted }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/shipments:
+    get:
+      tags: [Shipments]
+      summary: List shipments with customer name and company
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema: { $ref: "#/components/schemas/ShipmentStatus" }
+      responses:
+        "200":
+          description: Array of shipments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Shipment" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [Shipments]
+      summary: Create a shipment (starts as Created)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ShipmentCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Shipment" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /api/shipments/{id}:
+    get:
+      tags: [Shipments]
+      summary: Get shipment details
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The shipment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Shipment" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/shipments/{id}/status:
+    patch:
+      tags: [Shipments]
+      summary: Change shipment status (emits shipment_status_changed)
+      description: Delivered and Cancelled are final. Setting the same status is rejected.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { $ref: "#/components/schemas/ShipmentStatus" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Shipment" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Totals and status distribution
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalCustomers: { type: integer, example: 3 }
+                  totalShipments: { type: integer, example: 5 }
+                  byStatus:
+                    type: object
+                    properties:
+                      Created: { type: integer }
+                      InTransit: { type: integer }
+                      Delivered: { type: integer }
+                      Cancelled: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Missing or invalid token / credentials
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Conflict:
+      description: Duplicate value (email or tracking number)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: VALIDATION_ERROR }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+    CustomerStatus:
+      type: string
+      enum: [Active, Inactive]
+    ShipmentStatus:
+      type: string
+      enum: [Created, InTransit, Delivered, Cancelled]
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        name: { type: string }
+        role: { type: string }
+    Customer:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        company: { type: string }
+        status: { $ref: "#/components/schemas/CustomerStatus" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        createdBy: { type: string, nullable: true }
+        updatedBy: { type: string, nullable: true }
+        deletedAt: { type: string, format: date-time, nullable: true }
+    CustomerCreate:
+      type: object
+      required: [name, email, company]
+      properties:
+        name: { type: string, example: Temp Customer }
+        email: { type: string, format: email, example: temp@example.com }
+        company: { type: string, example: TempCo }
+        status: { $ref: "#/components/schemas/CustomerStatus" }
+    CustomerUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        company: { type: string }
+        status: { $ref: "#/components/schemas/CustomerStatus" }
+    Shipment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        trackingNumber: { type: string }
+        customerId: { type: string, format: uuid }
+        origin: { type: string }
+        destination: { type: string }
+        status: { $ref: "#/components/schemas/ShipmentStatus" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        createdBy: { type: string, nullable: true }
+        updatedBy: { type: string, nullable: true }
+        customer:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            company: { type: string }
+    ShipmentCreate:
+      type: object
+      required: [trackingNumber, customerId, origin, destination]
+      properties:
+        trackingNumber: { type: string, example: TRK-3001 }
+        customerId: { type: string, format: uuid }
+        origin: { type: string, example: Mumbai }
+        destination: { type: string, example: Pune }

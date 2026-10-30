@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 rounded text-sm font-medium ${

@@ -2,7 +2,7 @@
 import { api } from "../api/client";
 import type { DashboardStats, ShipmentStatus } from "../types";
 import StatCard from "../components/StatCard";
-import { STATUS_BAR } from "../components/StatusBadge";
+import { STATUS_BAR } from "../components/statusStyles";
 
 const ORDER: ShipmentStatus[] = ["Created", "InTransit", "Delivered", "Cancelled"];
 

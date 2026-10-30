@@ -1,17 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { api, tokenStore } from "../api/client";
 import type { AuthUser, LoginResponse } from "../types";
+import { AuthContext } from "./contextValue";
 
 const USER_KEY = "shipment_user";
-
-interface AuthState {
-  user: AuthUser | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthState | null>(null);
 
 function loadUser(): AuthUser | null {
   try {
@@ -47,10 +40,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [logout]);
 
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthState {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 }

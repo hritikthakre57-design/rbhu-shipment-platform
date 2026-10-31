@@ -20,7 +20,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const inputClass = "w-full border rounded px-3 py-2 text-sm";
+const inputClass = "input-field text-sm";
 
 export default function ShipmentForm({ onSubmit, onCancel }: Props) {
   const [serverError, setServerError] = useState("");
@@ -57,24 +57,24 @@ export default function ShipmentForm({ onSubmit, onCancel }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
       {serverError && (
-        <div className="rounded bg-red-50 border border-red-200 text-red-700 text-sm p-2">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           {serverError}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Tracking number</label>
-        <input className={inputClass} placeholder="TRK-2001" {...register("trackingNumber")} />
+        <label htmlFor="shipment-tracking" className="field-label">Tracking number</label>
+        <input id="shipment-tracking" className={inputClass} placeholder="TRK-2001" {...register("trackingNumber")} />
         {errors.trackingNumber && (
           <p className="text-xs text-red-600 mt-1">{errors.trackingNumber.message}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Customer</label>
-        <select className={inputClass} {...register("customerId")}>
+        <label htmlFor="shipment-customer" className="field-label">Customer</label>
+        <select id="shipment-customer" className={inputClass} {...register("customerId")}>
           <option value="">
             {customers.isLoading ? "Loading customers..." : "Select a customer"}
           </option>
@@ -93,31 +93,31 @@ export default function ShipmentForm({ onSubmit, onCancel }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Origin</label>
-        <input className={inputClass} {...register("origin")} />
+        <label htmlFor="shipment-origin" className="field-label">Origin</label>
+        <input id="shipment-origin" className={inputClass} {...register("origin")} />
         {errors.origin && <p className="text-xs text-red-600 mt-1">{errors.origin.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Destination</label>
-        <input className={inputClass} {...register("destination")} />
+        <label htmlFor="shipment-destination" className="field-label">Destination</label>
+        <input id="shipment-destination" className={inputClass} {...register("destination")} />
         {errors.destination && (
           <p className="text-xs text-red-600 mt-1">{errors.destination.message}</p>
         )}
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm rounded border text-slate-700 hover:bg-slate-100"
+          className="btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 text-sm rounded bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
+          className="btn-primary disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Creating..." : "Create shipment"}
         </button>

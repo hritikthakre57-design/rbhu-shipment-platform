@@ -133,4 +133,28 @@ WebSocket: connect to `/ws?token=<jwt>`. Every connected client receives
 
 ## Documentation
 
-- docs/azure-deployment.md: Azure architecture, security, deployment strategy, CI/CD, scaling
+- [docs/architecture.md](docs/architecture.md): application architecture and request-flow diagrams
+- [docs/database-schema.md](docs/database-schema.md): PostgreSQL tables, relationships, indexes, and migrations
+- [docs/api-documentation.md](docs/api-documentation.md): endpoint guide, examples, errors, and WebSocket contract
+- [docs/deployment-guide.md](docs/deployment-guide.md): Docker deployment and production checklist
+- [docs/azure-deployment.md](docs/azure-deployment.md): Azure architecture, security, deployment strategy, CI/CD, scaling
+
+## Run with Docker
+
+Docker Compose runs PostgreSQL, the Express API, the Flask analytics service, and the production React frontend:
+
+```powershell
+docker compose up --build -d
+```
+
+Open the application at http://localhost:8080. The API is also available at http://localhost:4000, with Swagger UI at http://localhost:4000/api-docs.
+
+The first startup applies Prisma migrations and seeds the development demo data. The demo login is `admin@example.com` / `Admin@123`.
+
+Before using this outside local development, set a strong `JWT_SECRET` and configure `OPENAI_API_KEY` in a root `.env` file. Stop the stack with:
+
+```powershell
+docker compose down
+```
+
+To remove the PostgreSQL data volume as well, use `docker compose down -v`.

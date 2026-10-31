@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { tokenStore } from "../api/client";
 import { useAuth } from "../context/useAuth";
+import { NotificationContext, type ShipmentNotification } from "../context/NotificationContext";
+import type { AuthUser } from "../types";
 
 interface ShipmentStatusChangedEvent {
   event: "shipment_status_changed";
@@ -11,9 +13,21 @@ interface ShipmentStatusChangedEvent {
 
 export default function ShipmentEventsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  return <ShipmentEventsSession key={user?.id ?? "logged-out"} user={user}>{children}</ShipmentEventsSession>;
+}
+
+function ShipmentEventsSession({ children, user }: { children: ReactNode; user: AuthUser | null }) {
   const queryClient = useQueryClient();
   const [toast, setToast] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<ShipmentNotification[]>([]);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const notificationState = useMemo(() => ({
+    notifications,
+    unreadCount: notifications.filter((notification) => !notification.read).length,
+    markAllRead: () => setNotifications((current) => current.map((notification) => ({ ...notification, read: true }))),
+    clearNotifications: () => setNotifications([]),
+  }), [notifications]);
 
   useEffect(() => {
     if (!user) return;
@@ -43,6 +57,16 @@ export default function ShipmentEventsProvider({ children }: { children: ReactNo
           const event = JSON.parse(message.data) as ShipmentStatusChangedEvent;
           if (event.event !== "shipment_status_changed") return;
 
+          setNotifications((current) => [
+            {
+              id: `${event.shipmentId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+              shipmentId: event.shipmentId,
+              status: event.status,
+              receivedAt: new Date().toISOString(),
+              read: false,
+            },
+            ...current,
+          ].slice(0, 20));
           queryClient.invalidateQueries({ queryKey: ["shipments"] });
           queryClient.invalidateQueries({ queryKey: ["dashboard"] });
           setToast(`Shipment ${event.shipmentId} is now ${event.status}`);
@@ -73,13 +97,13 @@ export default function ShipmentEventsProvider({ children }: { children: ReactNo
   }, [queryClient, user]);
 
   return (
-    <>
+    <NotificationContext.Provider value={notificationState}>
       {children}
       {toast && (
         <div className="fixed bottom-4 right-4 z-50 rounded bg-slate-800 px-4 py-3 text-sm text-white shadow-lg">
           {toast}
         </div>
       )}
-    </>
+    </NotificationContext.Provider>
   );
 }

@@ -3,12 +3,12 @@ import type { CustomerStatus, ShipmentStatus } from "../types";
 type Status = CustomerStatus | ShipmentStatus;
 
 export const STATUS_BADGE: Record<Status, string> = {
-  Active: "bg-green-100 text-green-700",
-  Inactive: "bg-slate-200 text-slate-600",
-  Created: "bg-blue-100 text-blue-700",
-  InTransit: "bg-amber-100 text-amber-700",
-  Delivered: "bg-green-100 text-green-700",
-  Cancelled: "bg-red-100 text-red-700",
+  Active: "bg-emerald-50 text-emerald-700",
+  Inactive: "bg-slate-100 text-slate-600",
+  Created: "bg-blue-50 text-blue-700",
+  InTransit: "bg-amber-50 text-amber-700",
+  Delivered: "bg-emerald-50 text-emerald-700",
+  Cancelled: "bg-rose-50 text-rose-700",
 };
 
 export const STATUS_BAR: Record<ShipmentStatus, string> = {

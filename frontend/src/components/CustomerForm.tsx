@@ -20,7 +20,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const inputClass = "w-full border rounded px-3 py-2 text-sm";
+const inputClass = "input-field text-sm";
 
 export default function CustomerForm({ initial, onSubmit, onCancel }: Props) {
   const [serverError, setServerError] = useState("");
@@ -57,51 +57,51 @@ export default function CustomerForm({ initial, onSubmit, onCancel }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
       {serverError && (
-        <div className="rounded bg-red-50 border border-red-200 text-red-700 text-sm p-2">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           {serverError}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-        <input className={inputClass} {...register("name")} />
+        <label htmlFor="customer-name" className="field-label">Name</label>
+        <input id="customer-name" className={inputClass} {...register("name")} />
         {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-        <input type="email" className={inputClass} {...register("email")} />
+        <label htmlFor="customer-email" className="field-label">Email</label>
+        <input id="customer-email" type="email" className={inputClass} {...register("email")} />
         {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
-        <input className={inputClass} {...register("company")} />
+        <label htmlFor="customer-company" className="field-label">Company</label>
+        <input id="customer-company" className={inputClass} {...register("company")} />
         {errors.company && <p className="text-xs text-red-600 mt-1">{errors.company.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-        <select className={inputClass} {...register("status")}>
+        <label htmlFor="customer-status" className="field-label">Status</label>
+        <select id="customer-status" className={inputClass} {...register("status")}>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm rounded border text-slate-700 hover:bg-slate-100"
+          className="btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 text-sm rounded bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
+          className="btn-primary disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Saving..." : "Save"}
         </button>

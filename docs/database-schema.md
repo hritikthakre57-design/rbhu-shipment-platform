@@ -2,6 +2,8 @@
 
 PostgreSQL, managed with Prisma migrations (`backend/prisma/migrations`). The schema source is `backend/prisma/schema.prisma`.
 
+The database is the system of record for identity, customers, shipments, and persisted assistant conversations. Prisma generates the client used by the repository layer; application code does not issue ad-hoc SQL.
+
 ## Entity relationship diagram
 
 ```mermaid
@@ -56,6 +58,8 @@ erDiagram
     CONVERSATION ||--o{ MESSAGE : "contains"
 ```
 
+`Conversation.userId` references `User.id` logically but is intentionally not a database foreign key. The same applies to `createdBy` and `updatedBy` audit fields. This preserves audit and conversation rows if an account is removed, at the cost of database-enforced referential integrity for those fields.
+
 ## Tables
 
 | Table | Purpose |
@@ -82,3 +86,5 @@ erDiagram
 ## Migrations
 
 `init` creates User, Customer and Shipment. `add_chat` adds Conversation, Message and the ChatRole enum. Apply with `npx prisma migrate dev` (development) or `npx prisma migrate deploy` (production). `npm run db:seed` loads the demo data.
+
+In Docker, the backend startup command runs `prisma migrate deploy` and then the idempotent seed after PostgreSQL passes its health check. The Compose database uses the named `postgres_data` volume; `docker compose down` preserves it, while `docker compose down -v` removes it.

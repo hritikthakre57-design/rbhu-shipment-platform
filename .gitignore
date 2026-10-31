@@ -7,3 +7,6 @@ __pycache__/
 *.log
 .DS_Store
 .pytest_cache/
+
+test-results/
+playwright-report/

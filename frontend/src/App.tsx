@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import CustomersPage from "./pages/CustomersPage";
 import ShipmentsPage from "./pages/ShipmentsPage";
+const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/shipments" element={<ShipmentsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/assistant" element={<AssistantPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

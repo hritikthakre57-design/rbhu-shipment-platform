@@ -18,6 +18,10 @@ export const shipmentService = {
     return shipment;
   },
 
+  findByTrackingNumber(trackingNumber: string) {
+    return shipmentRepository.findByTrackingNumber(trackingNumber);
+  },
+
   async create(input: CreateShipmentInput, userId: string) {
     const customer = await customerRepository.findById(input.customerId);
     if (!customer) throw new NotFoundError("Customer");

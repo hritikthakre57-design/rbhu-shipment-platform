@@ -10,6 +10,10 @@ const schema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   LOG_LEVEL: z.string().default("info"),
   ANALYTICS_URL: z.string().url().default("http://127.0.0.1:5001"),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
+  AI_MODEL: z.string().default("gpt-4o-mini"),
+  CHAT_HISTORY_LIMIT: z.coerce.number().int().positive().default(10),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -19,6 +19,11 @@ enum ShipmentStatus {
   Cancelled
 }
 
+enum ChatRole {
+  user
+  assistant
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -64,4 +69,25 @@ model Shipment {
 
   @@index([customerId])
   @@index([status])
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  role           ChatRole
+  content        String       @db.Text
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }

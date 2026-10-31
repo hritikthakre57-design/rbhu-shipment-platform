@@ -20,7 +20,7 @@ export const shipmentRepository = {
   },
 
   findByTrackingNumber(trackingNumber: string) {
-    return prisma.shipment.findUnique({ where: { trackingNumber } });
+    return prisma.shipment.findUnique({ where: { trackingNumber }, include: withCustomer });
   },
 
   create(data: CreateShipmentInput, userId: string) {

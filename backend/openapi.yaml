@@ -13,6 +13,7 @@ tags:
   - name: Shipments
   - name: Dashboard
   - name: Analytics
+  - name: Chat
   - name: Health
 paths:
   /health:
@@ -274,6 +275,45 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
+  /api/chat:
+    post:
+      tags: [Chat]
+      summary: Send a message to the AI assistant
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChatRequest" }
+      responses:
+        "200":
+          description: Assistant reply
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChatResponse" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/chat/{conversationId}:
+    get:
+      tags: [Chat]
+      summary: Get an owned conversation's messages
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Messages ordered oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ChatMessage" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
 components:
   securitySchemes:
     bearerAuth:
@@ -413,3 +453,24 @@ components:
         warnings:
           type: array
           items: { type: string }
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        conversationId: { type: string, format: uuid }
+        message: { type: string, minLength: 1, maxLength: 2000 }
+    ChatMessage:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+    ChatResponse:
+      type: object
+      required: [conversationId, mode, reply]
+      properties:
+        conversationId: { type: string, format: uuid }
+        mode: { type: string, enum: [ai, mock] }
+        reply: { $ref: "#/components/schemas/ChatMessage" }

@@ -12,6 +12,7 @@ tags:
   - name: Customers
   - name: Shipments
   - name: Dashboard
+  - name: Analytics
   - name: Health
 paths:
   /health:
@@ -244,6 +245,35 @@ paths:
                       Delivered: { type: integer }
                       Cancelled: { type: integer }
         "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/analytics/analyze:
+    post:
+      tags: [Analytics]
+      summary: Analyze an uploaded sales CSV
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Sales summary and Plotly charts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnalyticsResult" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "502":
+          description: Analytics service unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
 components:
   securitySchemes:
     bearerAuth:
@@ -356,3 +386,30 @@ components:
         customerId: { type: string, format: uuid }
         origin: { type: string, example: Mumbai }
         destination: { type: string, example: Pune }
+    AnalyticsResult:
+      type: object
+      required: [summary, charts, warnings]
+      properties:
+        summary:
+          type: object
+          properties:
+            rowCount: { type: integer }
+            totalRevenue: { type: number }
+            averageRevenue: { type: number }
+            medianRevenue: { type: number }
+            topSalesperson:
+              type: object
+              properties:
+                name: { type: string }
+                revenue: { type: number }
+            topRegion:
+              type: object
+              properties:
+                name: { type: string }
+                revenue: { type: number }
+        charts:
+          type: object
+          additionalProperties: true
+        warnings:
+          type: array
+          items: { type: string }

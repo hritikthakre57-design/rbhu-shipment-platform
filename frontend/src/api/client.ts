@@ -32,16 +32,20 @@ interface Options {
 
 export async function api<T>(path: string, { method = "GET", body }: Options = {}): Promise<T> {
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  if (body !== undefined && !isFormData) headers["Content-Type"] = "application/json";
   const token = tokenStore.get();
   if (token) headers.Authorization = `Bearer ${token}`;
+
+  const requestBody: BodyInit | undefined =
+    body === undefined ? undefined : isFormData ? body : JSON.stringify(body);
 
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   } catch {
     throw new ApiError(0, "Cannot reach the server. Is the backend running?", "NETWORK");

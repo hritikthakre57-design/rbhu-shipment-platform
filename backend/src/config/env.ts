@@ -9,6 +9,7 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().default("1h"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   LOG_LEVEL: z.string().default("info"),
+  ANALYTICS_URL: z.string().url().default("http://127.0.0.1:5001"),
 });
 
 const parsed = schema.safeParse(process.env);

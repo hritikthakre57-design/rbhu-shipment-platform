@@ -40,3 +40,24 @@ export interface LoginResponse {
   token: string;
   user: AuthUser;
 }
+
+export interface AnalyticsResult {
+  summary: {
+    rowCount: number;
+    totalRevenue: number;
+    averageRevenue: number;
+    medianRevenue: number;
+    topSalesperson: { name: string; revenue: number };
+    topRegion: { name: string; revenue: number };
+  };
+  charts: {
+    revenueByRegion: PlotlyFigure;
+    topSalespeople: PlotlyFigure;
+  };
+  warnings: string[];
+}
+
+export interface PlotlyFigure {
+  data: unknown[];
+  layout?: Record<string, unknown>;
+}

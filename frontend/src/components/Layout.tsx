@@ -23,6 +23,9 @@ export default function Layout() {
             <NavLink to="/shipments" className={linkClass}>
               Shipments
             </NavLink>
+            <NavLink to="/analytics" className={linkClass}>
+              Analytics
+            </NavLink>
           </nav>
           <div className="flex items-center gap-3 text-sm text-slate-600">
             <span className="hidden sm:inline">{user?.name}</span>
